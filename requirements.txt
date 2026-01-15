@@ -1,0 +1,8 @@
+# Telegram Bot
+telethon>=1.28.0
+
+# Environment Management
+python-dotenv>=1.0.0
+
+# Optional: For enhanced features
+# yt-dlp>=2023.3.4  # YouTube and other platform support

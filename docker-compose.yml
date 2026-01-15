@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  m3u8-recorder-bot:
+    build: .
+    container_name: m3u8-recorder-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./recordings:/app/recordings
+    environment:
+      - RECORDING_PATH=/app/recordings
+    # Optional: Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
