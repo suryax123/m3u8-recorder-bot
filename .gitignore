@@ -1,6 +1,18 @@
 # Environment variables
 .env
-.env.local
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
 
 # Recordings
 recordings/
@@ -8,52 +20,19 @@ recordings/
 *.mkv
 *.ts
 
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-egos/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+# Session files
+*.session
+*.session-journal
 
-# Virtual environments
-venv/
-ENV/
-env/
-.venv
-
-# IDEs
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
-
-# Telegram session files
-*.session
-*.session-journal
-
-# Logs
-*.log
-logs/
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Docker
-docker-compose.override.yml
+# Logs
+*.log

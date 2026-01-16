@@ -1,282 +1,291 @@
 # 🎥 M3U8 Stream Recorder Bot
 
-A powerful Telegram bot for recording live streams (M3U8, HLS, and more) with scheduled recording capabilities. Built with Python, Telethon, and FFmpeg.
-
-![Python](https://img.shields.io/badge/python-3.9+-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
-![Telegram](https://img.shields.io/badge/Telegram-Bot-blue.svg?logo=telegram)
+A powerful Telegram bot for recording live M3U8 streams with scheduling capabilities. Built with Python, Telethon, and FFmpeg.
 
 ## ✨ Features
 
-- 📹 **M3U8/HLS Stream Recording** - Record live streams with automatic reconnection
-- ⏰ **Scheduled Recordings** - Set start and end times for automated recording
-- 🔄 **Robust Stream Handling** - Automatic retry/reconnect for unstable streams
-- 📤 **Direct Telegram Upload** - Recorded files uploaded directly to your chat
-- ⚙️ **Quality Settings** - Optimized for 480p with low bandwidth (configurable)
-- 🛑 **Cancellation Support** - Cancel active or scheduled recordings anytime
-- 📊 **Status Tracking** - Check recording progress in real-time
-- 💾 **Automatic Cleanup** - Removes temporary files after upload
+- 🎬 **M3U8 Stream Recording** - Record live streams with robust error handling
+- ⏰ **Scheduling** - Schedule recordings with start/end times
+- 📤 **Auto Upload** - Automatically uploads recordings to Telegram
+- ⏹️ **Cancellation** - Cancel active or scheduled recordings anytime
+- 📊 **Progress Tracking** - Real-time upload progress with status updates
+- 🔄 **Resilient** - Automatic reconnection and retry mechanisms
+- 📺 **Quality Control** - 480p output @ 800kbps for optimal file sizes
+- 💾 **Efficient Storage** - Temporary MKV recording, converted to MP4 with fast-start
 
-## 📋 Requirements
+## 🛠️ Technology Stack
 
-- Python 3.9 or higher
+- **Python 3.11+**
+- **Telethon** - Async Telegram client library
+- **FFmpeg** - Stream recording and conversion
+- **asyncio** - Asynchronous task management
+- **Docker** - Containerized deployment
+
+## 📋 Prerequisites
+
+- Python 3.11 or higher
 - FFmpeg installed on your system
-- Telegram Bot Token (from [@BotFather](https://t.me/botfather))
-- Telegram API credentials (from [my.telegram.org](https://my.telegram.org))
+- Telegram API credentials (API_ID, API_HASH)
+- Telegram Bot Token from [@BotFather](https://t.me/botfather)
 
 ## 🚀 Quick Start
 
-### 1. Clone the Repository
+### Method 1: Docker (Recommended)
 
-```bash
-git clone https://github.com/suryax123/m3u8-recorder-bot.git
-cd m3u8-recorder-bot
-```
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/suryax123/m3u8-recorder-bot.git
+   cd m3u8-recorder-bot
+   ```
 
-### 2. Install Dependencies
+2. **Configure environment variables**
+   ```bash
+   cp .env.example .env
+   nano .env  # Edit with your credentials
+   ```
 
-```bash
-pip install -r requirements.txt
-```
+3. **Start the bot**
+   ```bash
+   docker-compose up -d
+   ```
 
-### 3. Install FFmpeg
+4. **View logs**
+   ```bash
+   docker-compose logs -f
+   ```
 
-**Ubuntu/Debian:**
-```bash
-sudo apt update
-sudo apt install ffmpeg
-```
+### Method 2: Manual Installation
 
-**macOS:**
-```bash
-brew install ffmpeg
-```
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/suryax123/m3u8-recorder-bot.git
+   cd m3u8-recorder-bot
+   ```
 
-**Windows:**
-Download from [ffmpeg.org](https://ffmpeg.org/download.html) and add to PATH
+2. **Create virtual environment**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
-### 4. Configure Environment Variables
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-Create a `.env` file in the project root:
+4. **Install FFmpeg**
+   - **Ubuntu/Debian**: `sudo apt install ffmpeg`
+   - **macOS**: `brew install ffmpeg`
+   - **Windows**: Download from [ffmpeg.org](https://ffmpeg.org/download.html)
 
-```bash
-cp .env.example .env
-```
+5. **Configure environment**
+   ```bash
+   cp .env.example .env
+   nano .env  # Edit with your credentials
+   ```
 
-Edit `.env` with your credentials:
+6. **Run the bot**
+   ```bash
+   python bot.py
+   ```
 
-```env
-API_ID=your_api_id_here
-API_HASH=your_api_hash_here
-BOT_TOKEN=your_bot_token_here
-RECORDING_PATH=./recordings
-```
-
-### 5. Run the Bot
-
-```bash
-python bot.py
-```
-
-## 🐳 Docker Deployment
-
-### Using Docker Compose (Recommended)
-
-```bash
-# Build and start
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop
-docker-compose down
-```
-
-### Using Docker Only
-
-```bash
-# Build
-docker build -t m3u8-recorder-bot .
-
-# Run
-docker run -d \
-  --name m3u8-bot \
-  -v $(pwd)/recordings:/app/recordings \
-  --env-file .env \
-  m3u8-recorder-bot
-```
-
-## 📖 Usage
-
-### Bot Commands
-
-- `/start` or `/menu` - Show main menu
-- `/cancel` - Cancel active or scheduled recording
-
-### Recording Workflow
-
-1. **Start the bot** - Send `/start` to the bot
-2. **New Recording** - Click "New Recording" button
-3. **Enter Stream URL** - Send the M3U8/HLS stream URL
-4. **Set Start Time** - Enter start time in `HH:MM` format (e.g., `14:30`)
-5. **Set End Time** - Enter end time in `HH:MM` format (e.g., `15:30`)
-6. **Confirm** - Review and confirm the recording schedule
-7. **Wait** - Bot will start recording at the scheduled time
-8. **Receive File** - Recorded video will be uploaded to your chat
-
-### Example Stream URLs
-
-```
-# Direct M3U8
-https://example.com/live/stream.m3u8
-
-# HLS Stream
-https://example.com/playlist.m3u8
-
-# YouTube Live (requires youtube-dl/yt-dlp)
-https://youtube.com/watch?v=xxxxx
-```
-
-## 🔧 Configuration
+## ⚙️ Configuration
 
 ### Environment Variables
 
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `API_ID` | Telegram API ID from my.telegram.org | ✅ Yes | - |
-| `API_HASH` | Telegram API Hash from my.telegram.org | ✅ Yes | - |
-| `BOT_TOKEN` | Bot token from @BotFather | ✅ Yes | - |
-| `RECORDING_PATH` | Directory to store recordings | ❌ No | `./recordings` |
+Create a `.env` file with the following variables:
 
-### Recording Settings
+```env
+# Telegram API Credentials (from https://my.telegram.org/apps)
+API_ID=12345678
+API_HASH=your_api_hash_here
+BOT_TOKEN=your_bot_token_from_botfather
 
-Edit `utils.py` to customize FFmpeg settings:
-
-- **Video Quality**: Change `-crf`, `-maxrate`, `-bufsize`
-- **Resolution**: Modify `-vf scale=-2:480` (currently 480p)
-- **Audio Bitrate**: Adjust `-b:a 96k`
-- **Reconnection**: Tweak `-reconnect_delay_max`
-
-## 🛠️ Advanced Configuration
-
-### Multi-User Support
-
-Current implementation supports one recording per user. To enable multiple simultaneous recordings:
-
-```python
-# In bot.py, modify active_recordings to use unique keys
-active_recordings: Dict[str, ActiveRecording] = {}
-
-# Use unique key: f"{chat_id}_{timestamp}"
+# Optional: Custom recording path
+RECORDING_PATH=./recordings
 ```
 
-### Custom Video Profiles
+### Getting Telegram Credentials
 
-Create quality presets in `utils.py`:
+1. **API_ID & API_HASH**
+   - Visit https://my.telegram.org/apps
+   - Log in with your phone number
+   - Create a new application
+   - Copy the `api_id` and `api_hash`
 
-```python
-QUALITY_PRESETS = {
-    "low": {"crf": 28, "maxrate": "800k", "scale": "480"},
-    "medium": {"crf": 23, "maxrate": "1500k", "scale": "720"},
-    "high": {"crf": 20, "maxrate": "3000k", "scale": "1080"}
-}
-```
+2. **BOT_TOKEN**
+   - Open Telegram and search for [@BotFather](https://t.me/botfather)
+   - Send `/newbot` and follow the prompts
+   - Copy the bot token provided
+
+## 📱 Usage
+
+### Starting the Bot
+
+1. Open Telegram and find your bot
+2. Send `/start` or `/menu`
+3. Use the interactive buttons to create a recording
+
+### Recording a Stream
+
+1. **Click "🎬 New Recording"**
+2. **Enter Stream URL** (M3U8, YouTube, or direct stream)
+3. **Enter Start Time** (Format: HH:MM, 24-hour)
+4. **Enter End Time** (Format: HH:MM, 24-hour)
+5. **Confirm** - The bot will schedule and record automatically
+
+### Commands
+
+- `/start` - Start the bot and show main menu
+- `/menu` - Show main menu
+- `/cancel` - Cancel active recording or scheduled job
+
+### Interactive Buttons
+
+- **🎬 New Recording** - Create a new recording
+- **⏹ Cancel Job** - Cancel active/scheduled recording
+- **ℹ️ Status** - Check recording status
 
 ## 📁 Project Structure
 
 ```
 m3u8-recorder-bot/
-├── bot.py              # Main bot logic and event handlers
-├── config.py           # Configuration and Telegram client
-├── utils.py            # Stream recording utilities
+├── bot.py              # Main bot logic with event handlers
+├── config.py           # Configuration and Telegram client initialization
+├── utils.py            # Recording utilities and FFmpeg handling
 ├── requirements.txt    # Python dependencies
 ├── .env.example        # Environment variables template
 ├── .gitignore          # Git ignore rules
-├── Dockerfile          # Docker container definition
-├── docker-compose.yml  # Docker Compose configuration
-├── README.md           # This file
-└── recordings/         # Recorded files (auto-created)
+├── Dockerfile          # Docker container configuration
+├── docker-compose.yml  # Docker Compose setup
+└── README.md           # This file
 ```
 
-## 🐛 Troubleshooting
+### File Descriptions
 
-### "Recording failed. Stream may be unavailable"
+#### `bot.py`
+Main application file containing:
+- Event handlers for bot commands
+- Recording state management
+- Scheduling logic
+- User interaction flow
 
-- Verify the stream URL is accessible
-- Check if the stream requires authentication
-- Test the URL with: `ffmpeg -i "URL" -t 10 test.mp4`
+#### `config.py`
+Configuration module with:
+- Environment variable loading
+- Telegram client initialization
+- Directory setup
 
-### "Connection failed"
+#### `utils.py`
+Utility functions for:
+- Async stream recording with FFmpeg
+- File conversion (MKV to MP4)
+- Cleanup operations
+- Cancellation handling
 
-- Verify API credentials in `.env`
-- Check internet connection
-- Ensure Telegram isn't blocking your IP
+## 🎯 Features Explained
 
-### FFmpeg Errors
+### Scheduling System
+- **Smart Date Handling** - Automatically handles next-day recordings
+- **Duration Validation** - Maximum 12-hour recordings
+- **Delayed Start** - Schedule recordings in advance
 
-- Ensure FFmpeg is installed: `ffmpeg -version`
-- Check FFmpeg has permissions to write to `RECORDING_PATH`
-- Review error logs in bot console
+### Recording Process
+1. **Stream Capture** - FFmpeg records to temporary MKV file
+2. **Progress Monitoring** - Real-time status updates
+3. **Conversion** - MKV converted to MP4 with fast-start
+4. **Upload** - File uploaded to Telegram with progress bar
+5. **Cleanup** - Temporary files automatically removed
 
-### Upload Failed
+### Error Handling
+- Stream connection failures
+- Network interruptions
+- Invalid URLs
+- Timeout protection
+- Graceful cancellation
 
-- Telegram file size limit is 2GB (4GB for Premium)
-- For large files, reduce recording duration or quality
-- Consider using external upload services
+## 🔧 Troubleshooting
 
-## 🔒 Security Notes
+### Bot Not Starting
+```bash
+# Check logs
+docker-compose logs -f
 
-- **Never commit `.env`** - Contains sensitive credentials
-- **Restrict bot access** - Use Telegram privacy settings
-- **Secure recording path** - Ensure directory has appropriate permissions
-- **Monitor disk space** - Recordings can be large
+# Verify credentials
+cat .env
+```
 
-## 📝 Limitations
+### Recording Fails
+- Verify FFmpeg is installed: `ffmpeg -version`
+- Check stream URL is accessible
+- Ensure sufficient disk space
+- Check file permissions in `RECORDING_PATH`
 
-- One active recording per user
-- Maximum recording duration: 12 hours
-- Telegram upload limit: 2GB (or 4GB with Premium)
-- Requires constant internet connection
-- FFmpeg must be available in PATH
+### Upload Fails
+- Check Telegram API limits (2GB file size)
+- Verify bot has send_files permission
+- Check network connectivity
+
+## 🐛 Development
+
+### Running in Development Mode
+
+```bash
+# Activate virtual environment
+source venv/bin/activate
+
+# Run with debug output
+python bot.py
+```
+
+### Testing Stream Recording
+
+```python
+# Test utils module independently
+from utils import record_stream_async
+
+# Test recording
+await record_stream_async(
+    "https://example.com/stream.m3u8",
+    duration_minutes=1,
+    filename="test_recording",
+    cancel_event=None
+)
+```
+
+## 📝 License
+
+This project is open source and available under the MIT License.
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please:
+Contributions, issues, and feature requests are welcome!
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📜 License
+## 💡 Tips
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- [Telethon](https://github.com/LonamiWebs/Telethon) - Telegram client library
-- [FFmpeg](https://ffmpeg.org/) - Video processing
-- [python-dotenv](https://github.com/theskumar/python-dotenv) - Environment management
+- Use M3U8 playlist URLs for best results
+- Schedule recordings at least 1 minute in advance
+- Keep recording duration under 6 hours for stability
+- Monitor disk space in `RECORDING_PATH`
+- Use Docker for production deployments
 
 ## 📧 Support
 
-- **Issues**: [GitHub Issues](https://github.com/suryax123/m3u8-recorder-bot/issues)
-- **Telegram**: [@suryax123](https://t.me/suryax123)
+If you encounter any issues:
+1. Check the troubleshooting section
+2. Review logs: `docker-compose logs -f`
+3. Open an issue on GitHub
 
-## 🗺️ Roadmap
+## ⚠️ Disclaimer
 
-- [ ] Multi-recording support per user
-- [ ] Quality selection menu
-- [ ] Automatic stream discovery
-- [ ] Database for recording history
-- [ ] Admin panel for monitoring
-- [ ] Webhook support for CI/CD integration
-- [ ] Custom watermark support
-- [ ] Subtitle/caption support
-- [ ] Cloud storage integration (S3, GCS)
+This bot is for personal use only. Ensure you have the right to record and distribute any content. Respect copyright laws and streaming service terms of service.
 
 ---
 
-**Made with ❤️ for the streaming community**
+Made with ❤️ by [suryax123](https://github.com/suryax123)
