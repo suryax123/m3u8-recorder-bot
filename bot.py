@@ -1,7 +1,3 @@
-cd /home/azureuser/StreamBot_v2 && \
-
-cat > bot.py << 'EOF'
-# -*- coding: utf-8 -*-
 import asyncio
 import datetime
 import sys
@@ -399,9 +395,3 @@ if __name__ == '__main__':
     except Exception as e:
         print(f"Fatal error: {e}")
         sys.exit(1)
-EOF
-
-echo "✨ Medium clean UI with new filename format!" && \
-sudo systemctl restart stream_bot.service && \
-sleep 2 && \
-sudo systemctl status stream_bot.service --no-pager
