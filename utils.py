@@ -13,47 +13,41 @@ async def record_stream_async(
     cancel_event: Optional[asyncio.Event] = None
 ) -> Optional[str]:
     """
-    Bulletproof M3U8 recording with aggressive retry/reconnect
+    M3U8 recording with proper duration control
     """
     os.makedirs(RECORDING_PATH, exist_ok=True)
-
+    
     duration_sec = int(duration_minutes * 60)
     temp_file = os.path.join(RECORDING_PATH, f"{filename}_temp.mkv")
     final_file = os.path.join(RECORDING_PATH, f"{filename}.mp4")
-
-    # Aggressive M3U8 handling flags
+    
+    # M3U8 optimized settings WITHOUT infinite reconnect
     record_cmd = [
         "ffmpeg", "-y",
         "-hide_banner",
         "-loglevel", "error",
-
-        # HTTP/Network settings (CRITICAL for M3U8)
+        
+        # Network settings for M3U8
         "-reconnect", "1",
         "-reconnect_streamed", "1",
-        "-reconnect_delay_max", "10",
-        "-reconnect_at_eof", "1",
+        "-reconnect_delay_max", "5",
         "-multiple_requests", "1",
-        "-http_persistent", "0",
-        "-timeout", "30000000",  # 30 second timeout per segment
-
-        # M3U8 specific settings
-        "-seekable", "0",
-        "-live_start_index", "-3",  # Start 3 segments back for stability
-
-        # Protocol options
+        "-timeout", "15000000",  # 15 second timeout
+        
+        # Protocol whitelist
         "-protocol_whitelist", "file,http,https,tcp,tls,crypto",
-
-        # Input with retries
+        
+        # Input
         "-i", url,
-
-        # Recording duration
+        
+        # CRITICAL: Duration BEFORE mapping to ensure it's respected
         "-t", str(duration_sec),
-
-        # Video mapping
+        
+        # Mapping
         "-map", "0:v:0",
         "-map", "0:a?",
-
-        # Video encoding (480p, low bandwidth)
+        
+        # Video encoding
         "-c:v", "libx264",
         "-preset", "veryfast",
         "-crf", "28",
@@ -63,77 +57,77 @@ async def record_stream_async(
         "-pix_fmt", "yuv420p",
         "-profile:v", "baseline",
         "-level", "3.0",
-
+        
         # Audio encoding
         "-c:a", "aac",
         "-b:a", "96k",
         "-ac", "2",
-
-        # Output to crash-safe MKV
+        
+        # Output
         "-f", "matroska",
         temp_file
     ]
-
+    
     process = None
-
+    start_time = asyncio.get_event_loop().time()
+    max_duration = duration_sec + 60  # Safety: max duration + 1 minute buffer
+    
     try:
-        print(f"[{filename}] Starting M3U8 recording: {duration_minutes:.0f} min")
-        print(f"[{filename}] URL: {url[:80]}...")
-
+        print(f"[{filename}] Recording for {duration_minutes:.0f} minutes")
+        
         process = await asyncio.create_subprocess_exec(
             *record_cmd,
             stdout=asyncio.subprocess.DEVNULL,
             stderr=asyncio.subprocess.PIPE
         )
-
-        # Monitor process with cancellation check
-        stderr_output = []
+        
+        # Monitor with timeout enforcement
         while process.returncode is None:
+            # Check cancellation
             if cancel_event and cancel_event.is_set():
                 raise RecordingCancelled()
-
+            
+            # Check duration timeout (safety mechanism)
+            elapsed = asyncio.get_event_loop().time() - start_time
+            if elapsed > max_duration:
+                print(f"[{filename}] TIMEOUT: Exceeded max duration ({max_duration}s), killing process")
+                process.kill()
+                break
+            
+            # Read stderr
+            if process.stderr:
+                try:
+                    line = await asyncio.wait_for(process.stderr.readline(), timeout=1.0)
+                    if line:
+                        err = line.decode('utf-8', errors='ignore').strip()
+                        if err and 'frame=' not in err.lower():
+                            print(f"[{filename}] {err}")
+                except asyncio.TimeoutError:
+                    pass
+            
+            # Wait with short timeout
             try:
-                # Read stderr non-blocking
-                if process.stderr:
-                    try:
-                        line = await asyncio.wait_for(process.stderr.readline(), timeout=1.0)
-                        if line:
-                            stderr_output.append(line.decode('utf-8', errors='ignore').strip())
-                    except asyncio.TimeoutError:
-                        pass
-
-                # Wait for process with timeout
                 await asyncio.wait_for(process.wait(), timeout=5.0)
             except asyncio.TimeoutError:
                 continue
-
-        # Show errors if any
-        if stderr_output:
-            errors = [e for e in stderr_output if e and 'frame=' not in e.lower()]
-            if errors:
-                print(f"[{filename}] FFmpeg errors:")
-                for err in errors[-10:]:  # Last 10 errors
-                    print(f"  {err}")
-
+        
+        actual_duration = asyncio.get_event_loop().time() - start_time
+        print(f"[{filename}] Process ended after {actual_duration:.0f} seconds (target: {duration_sec}s)")
+        
         # Validate recording
         if not os.path.exists(temp_file):
-            print(f"[{filename}] FAILED: No output file created")
-            print(f"[{filename}] This usually means:")
-            print(f"  - Stream URL is invalid or expired")
-            print(f"  - Stream requires authentication")
-            print(f"  - Network connectivity issue")
+            print(f"[{filename}] FAILED: No output file")
             return None
-
+        
         file_size = os.path.getsize(temp_file)
         if file_size < 100_000:
             print(f"[{filename}] FAILED: File too small ({file_size} bytes)")
-            print(f"[{filename}] Stream likely stopped immediately")
             os.remove(temp_file)
             return None
-
+        
         print(f"[{filename}] Recorded {file_size / (1024*1024):.1f}MB")
-
-        # Convert to MP4 for Telegram
+        
+        # Convert to MP4
         convert_cmd = [
             "ffmpeg", "-y",
             "-hide_banner",
@@ -145,15 +139,15 @@ async def record_stream_async(
             "-f", "mp4",
             final_file
         ]
-
+        
         print(f"[{filename}] Converting to MP4...")
-
+        
         convert_process = await asyncio.create_subprocess_exec(
             *convert_cmd,
             stdout=asyncio.subprocess.DEVNULL,
             stderr=asyncio.subprocess.PIPE
         )
-
+        
         try:
             await asyncio.wait_for(convert_process.wait(), timeout=600)
         except asyncio.TimeoutError:
@@ -161,33 +155,33 @@ async def record_stream_async(
             convert_process.kill()
             await convert_process.wait()
             return None
-
+        
         if not os.path.exists(final_file):
             print(f"[{filename}] Conversion failed")
             return None
-
+        
         final_size = os.path.getsize(final_file)
         if final_size < 100_000:
             print(f"[{filename}] Converted file too small")
             os.remove(final_file)
             return None
-
-        print(f"[{filename}] Success! Final: {final_size / (1024*1024):.1f}MB")
-
-        # Cleanup temp
+        
+        print(f"[{filename}] Success! {final_size / (1024*1024):.1f}MB")
+        
+        # Cleanup
         try:
             os.remove(temp_file)
         except:
             pass
-
+        
         return final_file
-
+        
     except RecordingCancelled:
-        print(f"[{filename}] Cancelled")
+        print(f"[{filename}] Cancelled by user")
         if process and process.returncode is None:
             process.kill()
             await process.wait()
-
+        
         for f in [temp_file, final_file]:
             try:
                 if os.path.exists(f):
@@ -195,17 +189,17 @@ async def record_stream_async(
             except:
                 pass
         raise
-
+        
     except Exception as e:
         print(f"[{filename}] Exception: {e}")
-
+        
         if process and process.returncode is None:
             try:
                 process.kill()
                 await process.wait()
             except:
                 pass
-
+        
         return None
 
 def cleanup_file(filepath: str) -> bool:
