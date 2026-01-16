@@ -14,7 +14,7 @@ except (TypeError, ValueError):
     print("ERROR: Missing API credentials in .env file")
     sys.exit(1)
 
-RECORDING_PATH = "/home/azureuser/StreamBot_v2/recordings"
+RECORDING_PATH = "[use your own path]"
 
 def initialize_client():
     print("Connecting to Telegram...")
