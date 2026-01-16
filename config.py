@@ -14,11 +14,7 @@ except (TypeError, ValueError):
     print("ERROR: Missing API credentials in .env file")
     sys.exit(1)
 
-# Use environment variable for recording path with fallback
-RECORDING_PATH = os.environ.get("RECORDING_PATH", "./recordings")
-
-# Create recording directory if it doesn't exist
-os.makedirs(RECORDING_PATH, exist_ok=True)
+RECORDING_PATH = "/home/azureuser/StreamBot_v2/recordings"
 
 def initialize_client():
     print("Connecting to Telegram...")
